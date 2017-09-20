@@ -52,6 +52,7 @@ public interface Archive extends Iterable<Archive.Entry> {
 	 * @return nested archives
 	 * @throws IOException if nested archives cannot be read
 	 */
+	// 返回jar/lib下面的jar的Archive列表
 	List<Archive> getNestedArchives(EntryFilter filter) throws IOException;
 
 	/**

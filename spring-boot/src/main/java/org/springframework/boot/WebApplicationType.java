@@ -37,6 +37,7 @@ public enum WebApplicationType {
 	 */
 	SERVLET,
 
+	// 主要是spring5.0的reactive编程
 	/**
 	 * The application should run as a reactive web application and should start an
 	 * embedded reactive web server.

@@ -40,6 +40,9 @@ import java.util.jar.Manifest;
  * @author Phillip Webb
  * @author Andy Wilkinson
  */
+// 把fat jar解压，然后直接启动应用。
+// java org.springframework.boot.loader.JarLauncher
+// 则构造一个ExplodedArchive（在jar里时是JarFileArchive），启动流程类似fat jar的。
 public class ExplodedArchive implements Archive {
 
 	private static final Set<String> SKIPPED_NAMES = new HashSet<>(

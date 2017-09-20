@@ -35,6 +35,11 @@ import org.springframework.boot.loader.jar.Handler;
  * @author Dave Syer
  * @author Andy Wilkinson
  */
+// spring boot注册了一个Handler来处理”jar:”这种协议的URL
+// spring boot扩展了JarFile和JarURLConnection，内部处理jar in jar的情况
+// 在处理多重jar in jar的URL时，spring boot会循环处理，并缓存已经加载到的JarFile
+// 对于多重jar in jar，实际上是解压到了临时目录来处理，可以参考JarFileArchive里的代码
+// 在获取URL的InputStream时，最终获取到的是JarFile里的JarEntryData
 public class LaunchedURLClassLoader extends URLClassLoader {
 
 	static {

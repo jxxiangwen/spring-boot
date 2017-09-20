@@ -47,6 +47,7 @@ public class JarLauncher extends ExecutableArchiveLauncher {
 		return entry.getName().startsWith(BOOT_INF_LIB);
 	}
 
+	// 这是spring boot的启动类,使用jar方式运行就运行此方法
 	public static void main(String[] args) throws Exception {
 		new JarLauncher().launch(args);
 	}

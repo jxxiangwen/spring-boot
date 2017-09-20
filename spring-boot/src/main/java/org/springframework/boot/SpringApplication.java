@@ -262,23 +262,32 @@ public class SpringApplication {
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+		// 查看需要启动的web环境
+		// 如果是的话，则会创建AnnotationConfigEmbeddedWebApplicationContext，
+		// 否则Spring context就是AnnotationConfigApplicationContext：
 		this.webApplicationType = deduceWebApplicationType();
+		// 从META-INF/spring.factories取出所有类型为ApplicationContextInitializer的className
 		setInitializers((Collection) getSpringFactoriesInstances(
 				ApplicationContextInitializer.class));
+		// 从META-INF/spring.factories取出所有类型为ApplicationListener的className
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+		// 通过对账找出在运行main方法的类
 		this.mainApplicationClass = deduceMainApplicationClass();
 	}
 
 	private WebApplicationType deduceWebApplicationType() {
+		// 存在reactive.DispatcherHandler,不存在servlet.DispatcherServlet
 		if (ClassUtils.isPresent(REACTIVE_WEB_ENVIRONMENT_CLASS, null)
 				&& !ClassUtils.isPresent(MVC_WEB_ENVIRONMENT_CLASS, null)) {
 			return WebApplicationType.REACTIVE;
 		}
+		// web环境类不存在
 		for (String className : WEB_ENVIRONMENT_CLASSES) {
 			if (!ClassUtils.isPresent(className, null)) {
 				return WebApplicationType.NONE;
 			}
 		}
+		// web环境
 		return WebApplicationType.SERVLET;
 	}
 
@@ -303,30 +312,48 @@ public class SpringApplication {
 	 * @param args the application arguments (usually passed from a Java main method)
 	 * @return a running {@link ApplicationContext}
 	 */
+	// 运行方法,入口
 	public ConfigurableApplicationContext run(String... args) {
+		// 记录总共启动花费时间
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 		ConfigurableApplicationContext context = null;
 		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
+		// 配置java.awt.headless
+		// Headless模式是系统的一种配置模式。在该模式下，系统缺少了显示设备、键盘或鼠标。
 		configureHeadlessProperty();
+		// 从META-INF/spring.factories取出所有类型为SpringApplicationRunListener的类
 		SpringApplicationRunListeners listeners = getRunListeners(args);
+		// 发布开始事件
 		listeners.starting();
 		try {
+			// 包装args
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(
 					args);
+			// 准备好环境,比如一些属性和profile等待
 			ConfigurableEnvironment environment = prepareEnvironment(listeners,
 					applicationArguments);
+			// 配置spring.beaninfo.ignore
 			configureIgnoreBeanInfo(environment);
+			// 打印横幅
 			Banner printedBanner = printBanner(environment);
+			// reactive环境ReactiveWebServerApplicationContext
+			// web环境会创建AnnotationConfigServletWebServerApplicationContext
+			// 否则Spring context就是AnnotationConfigApplicationContext：
 			context = createApplicationContext();
+			// 加载异常发布者
 			exceptionReporters = getSpringFactoriesInstances(
 					SpringBootExceptionReporter.class,
 					new Class[] { ConfigurableApplicationContext.class }, context);
 			prepareContext(context, environment, listeners, applicationArguments,
 					printedBanner);
+			// 进行spring的refresh,和正常spring相似,同时会注册上shutDownHook
 			refreshContext(context);
+			// 调用注册的ApplicationRunner,CommandLineRunner
 			afterRefresh(context, applicationArguments);
+			// 发布结束事件
 			listeners.finished(context, null);
+			// 停止计时
 			stopWatch.stop();
 			if (this.logStartupInfo) {
 				new StartupInfoLogger(this.mainApplicationClass)
@@ -344,9 +371,13 @@ public class SpringApplication {
 			SpringApplicationRunListeners listeners,
 			ApplicationArguments applicationArguments) {
 		// Create and configure the environment
+		// 创建environment
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
+		// 配置属性和profile
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
+		// 发布环境准备好事件
 		listeners.environmentPrepared(environment);
+		// 绑定environment到SpringApplication
 		bindToSpringApplication(environment);
 		if (this.webApplicationType == WebApplicationType.NONE) {
 			environment = new EnvironmentConverter(getClassLoader())
@@ -413,8 +444,10 @@ public class SpringApplication {
 			Class<?>[] parameterTypes, Object... args) {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		// Use names and ensure unique to protect against duplicates
+		// loadFactoryNames会从META-INF/spring.factories取出所有类型为type的className
 		Set<String> names = new LinkedHashSet<>(
 				SpringFactoriesLoader.loadFactoryNames(type, classLoader));
+		// 反射出所有实例
 		List<T> instances = createSpringFactoriesInstances(type, parameterTypes,
 				classLoader, args, names);
 		AnnotationAwareOrderComparator.sort(instances);
@@ -466,7 +499,9 @@ public class SpringApplication {
 	 */
 	protected void configureEnvironment(ConfigurableEnvironment environment,
 			String[] args) {
+		// 配置属性
 		configurePropertySources(environment, args);
+		// 配置profile
 		configureProfiles(environment, args);
 	}
 
@@ -1242,6 +1277,7 @@ public class SpringApplication {
 	 */
 	public static ConfigurableApplicationContext run(Class<?>[] primarySources,
 			String[] args) {
+		// 入口
 		return new SpringApplication(primarySources).run(args);
 	}
 

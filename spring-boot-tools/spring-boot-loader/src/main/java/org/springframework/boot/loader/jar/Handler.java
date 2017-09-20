@@ -37,6 +37,8 @@ import java.util.logging.Logger;
  * @author Andy Wilkinson
  * @see JarFile#registerUrlProtocolHandler()
  */
+// Spring boot通过注册了一个自定义的Handler类来处理多重jar in jar的逻辑。
+// Handler内部会用SoftReference来缓存所有打开过的JarFile
 public class Handler extends URLStreamHandler {
 
 	// NOTE: in order to be found as a URL protocol handler, this class must be public,

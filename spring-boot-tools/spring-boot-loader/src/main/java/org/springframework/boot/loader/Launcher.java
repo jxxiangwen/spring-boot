@@ -45,7 +45,9 @@ public abstract class Launcher {
 	 * @throws Exception if the application fails to launch
 	 */
 	protected void launch(String[] args) throws Exception {
+		// 注册url处理器
 		JarFile.registerUrlProtocolHandler();
+		// 根据archives创建classLoader,创建LaunchedURLClassLoader,是URLClassLoader的子类
 		ClassLoader classLoader = createClassLoader(getClassPathArchives());
 		launch(args, getMainClass(), classLoader);
 	}
@@ -58,9 +60,11 @@ public abstract class Launcher {
 	 */
 	protected ClassLoader createClassLoader(List<Archive> archives) throws Exception {
 		List<URL> urls = new ArrayList<>(archives.size());
+		// archives转化为URL
 		for (Archive archive : archives) {
 			urls.add(archive.getUrl());
 		}
+		// 创建LaunchedURLClassLoader,是URLClassLoader的子类
 		return createClassLoader(urls.toArray(new URL[urls.size()]));
 	}
 
@@ -71,6 +75,7 @@ public abstract class Launcher {
 	 * @throws Exception if the classloader cannot be created
 	 */
 	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
+		// 创建LaunchedURLClassLoader
 		return new LaunchedURLClassLoader(urls, getClass().getClassLoader());
 	}
 
@@ -83,7 +88,9 @@ public abstract class Launcher {
 	 */
 	protected void launch(String[] args, String mainClass, ClassLoader classLoader)
 			throws Exception {
+		// 设置classLoader
 		Thread.currentThread().setContextClassLoader(classLoader);
+		// 反射出自定义的Main方法运行
 		createMainMethodRunner(mainClass, args, classLoader).run();
 	}
 
@@ -111,8 +118,10 @@ public abstract class Launcher {
 	 * @return the class path archives
 	 * @throws Exception if the class path archives cannot be obtained
 	 */
+	// 由于JarLauncher继承自ExecutableArchiveLauncher,因此执行ExecutableArchiveLauncher的此方法
 	protected abstract List<Archive> getClassPathArchives() throws Exception;
 
+	// 此处获得当前jar
 	protected final Archive createArchive() throws Exception {
 		ProtectionDomain protectionDomain = getClass().getProtectionDomain();
 		CodeSource codeSource = protectionDomain.getCodeSource();

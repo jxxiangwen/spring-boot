@@ -50,8 +50,10 @@ public abstract class ExecutableArchiveLauncher extends Launcher {
 		return this.archive;
 	}
 
+	// 返回的是Manifest中的Start-Class
 	@Override
 	protected String getMainClass() throws Exception {
+		// archive是打包的jar文件
 		Manifest manifest = this.archive.getManifest();
 		String mainClass = null;
 		if (manifest != null) {
@@ -66,8 +68,10 @@ public abstract class ExecutableArchiveLauncher extends Launcher {
 
 	@Override
 	protected List<Archive> getClassPathArchives() throws Exception {
+		// 获取lib下面所有的jar
 		List<Archive> archives = new ArrayList<>(
 				this.archive.getNestedArchives(this::isNestedArchive));
+		// 钩子方法
 		postProcessClassPathArchives(archives);
 		return archives;
 	}

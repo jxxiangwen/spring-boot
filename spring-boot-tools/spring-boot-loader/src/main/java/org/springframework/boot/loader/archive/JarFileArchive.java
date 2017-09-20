@@ -71,6 +71,7 @@ public class JarFileArchive implements Archive {
 		if (this.url != null) {
 			return this.url;
 		}
+		// 这里会注册上自定义的Handler,来处理多重jar in jar的逻辑
 		return this.jarFile.getUrl();
 	}
 
