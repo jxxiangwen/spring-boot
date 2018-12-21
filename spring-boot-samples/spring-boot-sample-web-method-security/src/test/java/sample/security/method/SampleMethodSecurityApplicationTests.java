@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.support.BasicAuthorizationInterceptor;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -49,7 +48,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@DirtiesContext
 public class SampleMethodSecurityApplicationTests {
 
 	@LocalServerPort
@@ -59,7 +57,7 @@ public class SampleMethodSecurityApplicationTests {
 	private TestRestTemplate restTemplate;
 
 	@Test
-	public void testHome() throws Exception {
+	public void testHome() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
 		ResponseEntity<String> entity = this.restTemplate.exchange("/", HttpMethod.GET,
@@ -69,7 +67,7 @@ public class SampleMethodSecurityApplicationTests {
 	}
 
 	@Test
-	public void testLogin() throws Exception {
+	public void testLogin() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
 		MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
@@ -84,7 +82,7 @@ public class SampleMethodSecurityApplicationTests {
 	}
 
 	@Test
-	public void testDenied() throws Exception {
+	public void testDenied() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
 		MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
@@ -104,22 +102,22 @@ public class SampleMethodSecurityApplicationTests {
 	}
 
 	@Test
-	public void testManagementProtected() throws Exception {
+	public void testManagementProtected() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		ResponseEntity<String> entity = this.restTemplate.exchange("/application/beans",
+		ResponseEntity<String> entity = this.restTemplate.exchange("/actuator/beans",
 				HttpMethod.GET, new HttpEntity<Void>(headers), String.class);
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 	}
 
 	@Test
-	public void testManagementAuthorizedAccess() throws Exception {
-		BasicAuthorizationInterceptor basicAuthInterceptor = new BasicAuthorizationInterceptor(
+	public void testManagementAuthorizedAccess() {
+		BasicAuthenticationInterceptor basicAuthInterceptor = new BasicAuthenticationInterceptor(
 				"admin", "admin");
 		this.restTemplate.getRestTemplate().getInterceptors().add(basicAuthInterceptor);
 		try {
 			ResponseEntity<String> entity = this.restTemplate
-					.getForEntity("/application/beans", String.class);
+					.getForEntity("/actuator/beans", String.class);
 			assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
 		}
 		finally {
